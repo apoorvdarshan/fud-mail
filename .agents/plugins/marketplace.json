@@ -1,0 +1,20 @@
+{
+  "name": "multi-account-gmail-mcp",
+  "interface": {
+    "displayName": "Multi-Account Gmail MCP"
+  },
+  "plugins": [
+    {
+      "name": "multi-account-gmail-mcp",
+      "source": {
+        "source": "local",
+        "path": "./plugins/multi-account-gmail-mcp"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
