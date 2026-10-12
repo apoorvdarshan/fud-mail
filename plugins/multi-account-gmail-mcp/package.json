@@ -1,6 +1,6 @@
 {
   "name": "multi-account-gmail-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Local full-mailbox Gmail MCP server with explicit multi-account selection.",
@@ -9,7 +9,8 @@
     "configure": "node ./scripts/configure.mjs",
     "auth": "node ./scripts/auth.mjs",
     "check": "node --check ./src/server.mjs && node --check ./src/token-persistence.mjs && node --check ./src/google-auth.mjs && node --check ./src/message-utils.mjs && node --check ./scripts/configure.mjs && node --check ./scripts/auth.mjs",
-    "test": "node ./scripts/unit-test.mjs && node ./scripts/smoke-test.mjs"
+    "test": "node ./scripts/unit-test.mjs && node ./scripts/smoke-test.mjs && node ./scripts/fuzz.test.js",
+    "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.1",
@@ -20,5 +21,11 @@
   "overrides": {
     "@hono/node-server": "2.0.11",
     "gaxios": "7.3.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.12.0",
+    "fast-check": "4.10.2",
+    "globals": "17.13.0"
   }
 }

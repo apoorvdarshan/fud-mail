@@ -1,5 +1,8 @@
 # Fud Mail
 
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15433/badge)](https://www.bestpractices.dev/projects/15433)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/apoorvdarshan/fud-mail/badge)](https://scorecard.dev/viewer/?uri=github.com/apoorvdarshan/fud-mail)
+
 A local Codex plugin and MCP server for managing multiple Gmail accounts with
 an explicit account choice on every tool call.
 
@@ -173,6 +176,13 @@ Supported overrides:
 - **Windows/Linux:** live Gmail authorization currently requires macOS
   Keychain. CI can run synthetic tests on Linux; that does not provide Linux
   credential storage support.
+
+## Community and security
+
+See [CONTRIBUTING.md](CONTRIBUTING.md), [Code of Conduct](CODE_OF_CONDUCT.md),
+[SECURITY.md](SECURITY.md), [interface reference](docs/INTERFACE.md), and
+[CHANGELOG.md](CHANGELOG.md). Report bugs and propose features in
+[GitHub issues](https://github.com/apoorvdarshan/fud-mail/issues).
 
 ## Development
 
