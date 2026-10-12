@@ -108,4 +108,72 @@ assert.match(
   /For your review\n\n---------- Forwarded message ---------/,
 );
 
+// A failed save must not become an unhandled rejection or stop later saves.
+const { EventEmitter } = await import("node:events");
+const { persistTokenUpdates } = await import("../src/token-persistence.mjs");
+const client = new EventEmitter();
+const saved = [];
+const warnings = [];
+let releaseFirst;
+const gate = new Promise(resolve => { releaseFirst = resolve; });
+const drain = persistTokenUpdates(client, { refresh_token: "synthetic-refresh" }, async tokens => {
+  saved.push(tokens);
+  if (saved.length === 1) {
+    await gate;
+    throw new Error("synthetic-secret-in-command");
+  }
+}, message => warnings.push(message));
+client.emit("tokens", { access_token: "synthetic-first" });
+client.emit("tokens", { access_token: "synthetic-second" });
+await Promise.resolve();
+assert.equal(saved.length, 1);
+releaseFirst();
+await drain();
+assert.deepEqual(saved, [
+  { refresh_token: "synthetic-refresh", access_token: "synthetic-first" },
+  { refresh_token: "synthetic-refresh", access_token: "synthetic-second" },
+]);
+assert.equal(warnings.length, 1);
+assert.match(warnings[0], /Keychain/);
+assert.doesNotMatch(warnings[0], /synthetic-/);
+client.emit("tokens", { refresh_token: "synthetic-rotated" });
+await drain();
+assert.equal(saved[2].refresh_token, "synthetic-rotated");
+assert.equal(saved[2].access_token, "synthetic-second");
+// Exercise the real save wrapper with a fake security executable, never Keychain.
+const { mkdtemp, writeFile, rm } = await import("node:fs/promises");
+const { tmpdir } = await import("node:os");
+const { join } = await import("node:path");
+const { spawnSync } = await import("node:child_process");
+const fakeBin = await mkdtemp(join(tmpdir(), "gmail-keychain-test-"));
+try {
+  await writeFile(join(fakeBin, "security"), '#!/bin/sh\nprintf "%s\\n" "$@" >&2\nexit 1\n', { mode: 0o700 });
+  const child = spawnSync(process.execPath, ["--input-type=module", "-e", `
+    import { saveTokensToKeychain } from ${JSON.stringify(new URL("../src/google-auth.mjs", import.meta.url).href)};
+    try {
+      await saveTokensToKeychain("test@example.com", { access_token: "synthetic-sensitive-token" });
+      process.exitCode = 1;
+    } catch (error) { console.log(error.message); }
+  `], {
+    encoding: "utf8",
+    env: { ...process.env, PATH: fakeBin, GMAIL_MCP_ACCOUNTS: "test@example.com" },
+  });
+  assert.equal(child.status, 0, child.stderr);
+  assert.match(child.stdout, /Unable to save Gmail OAuth tokens/);
+  assert.doesNotMatch(child.stdout + child.stderr, /synthetic-sensitive-token|add-generic-password/);
+} finally {
+  await rm(fakeBin, { recursive: true, force: true });
+}
+// Verify MIME composition after the Nodemailer security update; no sending.
+const { default: MailComposer } = await import("nodemailer/lib/mail-composer/index.js");
+const mime = await new MailComposer({
+  from: "sender@example.com",
+  to: "recipient@example.com",
+  subject: "Synthetic draft",
+  text: "Synthetic body",
+  attachments: [{ filename: "example.txt", content: "Synthetic attachment" }],
+}).compile().build();
+assert.match(mime.toString(), /Subject: Synthetic draft/);
+assert.match(mime.toString(), /multipart\/mixed/);
+assert.match(mime.toString(), /filename=example.txt/);
 console.log("Unit tests passed.");

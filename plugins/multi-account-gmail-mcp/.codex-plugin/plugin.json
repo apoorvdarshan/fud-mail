@@ -6,7 +6,7 @@
     "name": "Multi-Account Gmail MCP contributors"
   },
   "interface": {
-    "displayName": "Multi-Account Gmail MCP",
+    "displayName": "Fud Mail",
     "shortDescription": "Full Gmail access with explicit account selection.",
     "longDescription": "Searches, reads, downloads attachments, organizes, forwards, drafts, sends, and deletes Gmail across configured accounts. Every operation requires an explicit account, and irreversible tools are marked destructive.",
     "developerName": "Community",

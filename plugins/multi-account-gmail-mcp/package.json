@@ -8,13 +8,13 @@
   "scripts": {
     "configure": "node ./scripts/configure.mjs",
     "auth": "node ./scripts/auth.mjs",
-    "check": "node --check ./src/server.mjs && node --check ./src/google-auth.mjs && node --check ./src/message-utils.mjs && node --check ./scripts/configure.mjs && node --check ./scripts/auth.mjs",
+    "check": "node --check ./src/server.mjs && node --check ./src/token-persistence.mjs && node --check ./src/google-auth.mjs && node --check ./src/message-utils.mjs && node --check ./scripts/configure.mjs && node --check ./scripts/auth.mjs",
     "test": "node ./scripts/unit-test.mjs && node ./scripts/smoke-test.mjs"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.29.0",
+    "@modelcontextprotocol/sdk": "1.32.1",
     "googleapis": "173.0.0",
-    "nodemailer": "9.0.3",
+    "nodemailer": "10.1.0",
     "zod": "4.3.6"
   },
   "overrides": {

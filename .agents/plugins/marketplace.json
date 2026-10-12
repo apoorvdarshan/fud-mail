@@ -1,7 +1,7 @@
 {
   "name": "multi-account-gmail-mcp",
   "interface": {
-    "displayName": "Multi-Account Gmail MCP"
+    "displayName": "Fud Mail"
   },
   "plugins": [
     {

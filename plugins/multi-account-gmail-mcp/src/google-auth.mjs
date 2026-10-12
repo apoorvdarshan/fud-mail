@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { google } from "googleapis";
+import { persistTokenUpdates } from "./token-persistence.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -133,16 +134,21 @@ export async function loadTokensFromKeychain(account) {
 
 export async function saveTokensToKeychain(account, tokens) {
   const expectedEmail = requireSupportedEmail(account);
-  await execFileAsync("security", [
-    "add-generic-password",
-    "-U",
-    "-a",
-    expectedEmail,
-    "-s",
-    KEYCHAIN_SERVICE,
-    "-w",
-    JSON.stringify(tokens),
-  ]);
+  try {
+    await execFileAsync("security", [
+      "add-generic-password",
+      "-U",
+      "-a",
+      expectedEmail,
+      "-s",
+      KEYCHAIN_SERVICE,
+      "-w",
+      JSON.stringify(tokens),
+    ]);
+  } catch {
+    // execFile errors can contain the command arguments, including tokens.
+    throw new Error("Unable to save Gmail OAuth tokens to macOS Keychain. Check Keychain access and authorize again if needed.");
+  }
 }
 
 export async function createOAuthClient({ redirectUri } = {}) {
@@ -158,13 +164,12 @@ export async function createOAuthClient({ redirectUri } = {}) {
 export async function createAuthorizedGmail(account) {
   const expectedEmail = requireSupportedEmail(account);
   const oauth2Client = await createOAuthClient();
-  let currentTokens = await loadTokensFromKeychain(expectedEmail);
+  const currentTokens = await loadTokensFromKeychain(expectedEmail);
   oauth2Client.setCredentials(currentTokens);
 
-  oauth2Client.on("tokens", async (newTokens) => {
-    currentTokens = { ...currentTokens, ...newTokens };
-    await saveTokensToKeychain(expectedEmail, currentTokens);
-  });
+  persistTokenUpdates(oauth2Client, currentTokens, (tokens) =>
+    saveTokensToKeychain(expectedEmail, tokens),
+  );
 
   const gmail = google.gmail({ version: "v1", auth: oauth2Client });
   const { data: profile } = await gmail.users.getProfile({ userId: "me" });

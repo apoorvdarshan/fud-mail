@@ -1,6 +1,7 @@
-# Multi-Account Gmail MCP plugin
+# Fud Mail plugin
 
 This directory contains the Codex plugin and local MCP server.
+See the [root README](../../README.md) for Claude Code/OpenCode setup and troubleshooting.
 
 ## Setup
 
